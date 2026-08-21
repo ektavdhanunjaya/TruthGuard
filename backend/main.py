@@ -1,10 +1,23 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 app = FastAPI(
     title="TruthGuard API",
     description="Self-Verifying RAG Engine for Hallucination Detection and Mitigation",
     version="0.1.0"
+)
+
+# Allow the React frontend to communicate with the FastAPI backend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
