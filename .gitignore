@@ -19,7 +19,7 @@ dist/
 build/
 
 # ChromaDB
-chroma_db/
+backend/storage/chroma/
 
 # IDE
 .vscode/
