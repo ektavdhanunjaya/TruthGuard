@@ -1,0 +1,25 @@
+Artificial Intelligence
+
+Artificial Intelligence (AI) is a field of computer science focused on creating systems that can perform tasks that normally require human intelligence.
+
+Machine Learning
+
+Machine Learning (ML) is a subfield of Artificial Intelligence. Machine Learning systems learn patterns from data and use those patterns to make predictions or decisions without being explicitly programmed for every task.
+
+Deep Learning
+
+Deep Learning is a subfield of Machine Learning that uses artificial neural networks with multiple layers to learn complex patterns from data.
+
+Deep learning developed through research over several decades and does not have a single inventor. Geoffrey Hinton is one of the important researchers who contributed significantly to the development of deep learning.
+
+Natural Language Processing
+
+Natural Language Processing (NLP) is a field of Artificial Intelligence concerned with enabling computers to process, understand, interpret, and generate human language.
+
+Generative Artificial Intelligence
+
+Generative AI refers to AI systems that can generate new content such as text, images, audio, video, or computer code based on patterns learned from data.
+
+Retrieval-Augmented Generation
+
+Retrieval-Augmented Generation (RAG) is an approach that combines information retrieval with generative language models. Instead of relying only on information stored in the model, RAG retrieves relevant information from an external knowledge source.

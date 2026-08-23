@@ -6,12 +6,14 @@ class ClaimVerifier:
 
     def __init__(
         self,
-        support_threshold: float = 0.65
+        supported_threshold: float = 0.65,
+        uncertain_threshold: float = 0.50
     ):
 
         self.similarity_checker = SimilarityChecker()
 
-        self.support_threshold = support_threshold
+        self.supported_threshold = supported_threshold
+        self.uncertain_threshold = uncertain_threshold
 
     def verify(
         self,
@@ -34,15 +36,24 @@ class ClaimVerifier:
                 combined_evidence
             )
 
-            supported = (
-                score >= self.support_threshold
-            )
+            if score >= self.supported_threshold:
+
+                status = "SUPPORTED"
+
+            elif score >= self.uncertain_threshold:
+
+                status = "UNCERTAIN"
+
+            else:
+
+                status = "UNSUPPORTED"
 
             results.append(
                 {
                     "claim": claim,
                     "similarity": score,
-                    "supported": supported
+                    "supported": status == "SUPPORTED",
+                    "status": status
                 }
             )
 
