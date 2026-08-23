@@ -6,7 +6,7 @@ class ClaimVerifier:
 
     def __init__(
         self,
-        supported_threshold: float = 0.65,
+        supported_threshold: float = 0.60,
         uncertain_threshold: float = 0.50
     ):
 
@@ -31,7 +31,7 @@ class ClaimVerifier:
 
         for claim in claims:
 
-            score = self.similarity_checker.calculate(
+            score = self.similarity_checker.calculate_claim_similarity(
                 claim,
                 combined_evidence
             )

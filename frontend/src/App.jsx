@@ -75,7 +75,7 @@ function App() {
 
                 <p>
                   <strong>Truth Probability:</strong>{" "}
-                  {result.truth_probability}
+                  {(result.trust_score * 100).toFixed(2)}%
                 </p>
               </>
             )}

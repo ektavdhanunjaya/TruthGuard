@@ -1,6 +1,7 @@
 from app.verification.claim_verifier import ClaimVerifier
 from app.verification.trust_score import calculate_trust_score
 from app.verification.similarity import SimilarityChecker
+from app.verification.contradiction import ContradictionChecker
 from app.llm.ollama_client import classify_claim
 
 
@@ -10,6 +11,7 @@ class VerificationEngine:
 
         self.claim_verifier = ClaimVerifier()
         self.similarity_checker = SimilarityChecker()
+        self.contradiction_checker = ContradictionChecker()
 
     def verify(
         self,
@@ -52,18 +54,41 @@ class VerificationEngine:
         llm_results = []
 
         for claim_result in claim_results:
+             
+            best_evidence, best_similarity = (
+                self.similarity_checker.find_best_evidence(
+                    claim_result["claim"],
+                    combined_evidence
+                )
+            )
+
+            llm_evidence = f"""
+            FULL EVIDENCE:
+            {combined_evidence}
+
+            MOST RELEVANT EVIDENCE:
+            {best_evidence}
+            """
 
             classification = classify_claim(
                 claim=claim_result["claim"],
-                evidence=combined_evidence
+                evidence=llm_evidence
+            )
+            nli_status = self.contradiction_checker.classify(
+                claim_result["claim"],
+                combined_evidence
             )
 
             llm_results.append(
                 {
                     "claim": claim_result["claim"],
-                    "classification": classification
+                    "classification": classification,
+                    "nli_status": nli_status,
+                    "evidence": best_evidence,
+                    "similarity": best_similarity
                 }
             )
+                
 
         # --------------------------------------------------
         # 5. Combine semantic + LLM verification
@@ -76,45 +101,62 @@ class VerificationEngine:
             llm_results
         ):
 
-            semantic_status = (
-                "SUPPORTED"
-                if semantic_result["similarity"] >= 0.75
-                else (
-                    "UNCERTAIN"
-                    if semantic_result["similarity"] >= 0.50
-                    else "UNSUPPORTED"
-                )
-            )
+            similarity = semantic_result["similarity"]
+            semantic_status = semantic_result["status"]
 
+            # LLM classification
             llm_status = llm_result["classification"]
 
-            
             # --------------------------------------------------
-            # Combine semantic + LLM verification
+            # NLI + LLM + Semantic final classification
             # --------------------------------------------------
 
-            # Strong semantic evidence should protect against
-            # false LLM contradictions.
-            if (
-                semantic_result["similarity"] >= 0.65
-                and llm_status == "CONTRADICTED"
-            ):
-                final_status = "SUPPORTED"
+            nli_status = llm_result["nli_status"]
 
-            elif llm_status == "CONTRADICTED":
+            if nli_status == "CONTRADICTION":
+
                 final_status = "CONTRADICTED"
 
-            elif llm_status == "SUPPORTED":
+            elif nli_status == "ENTAILMENT":
+
                 final_status = "SUPPORTED"
 
-            elif semantic_status == "SUPPORTED":
+            elif semantic_status == "SUPPORTED" and similarity >= 0.90:
+
                 final_status = "SUPPORTED"
- 
+
+            elif llm_status == "SUPPORTED":
+
+                final_status = "SUPPORTED"
+
+            elif llm_status == "CONTRADICTED" and similarity < 0.70:
+
+                final_status = "CONTRADICTED"
+
             elif semantic_status == "UNSUPPORTED":
+
                 final_status = "UNSUPPORTED"
 
             else:
+
                 final_status = "UNCERTAIN"
+
+
+            # --------------------------------------------------
+            # IMPORTANT:
+            # Store the final result
+            # --------------------------------------------------
+
+            final_claim_results.append(
+                {
+                    "claim": semantic_result["claim"],
+                    "similarity": similarity,
+                    "semantic_status": semantic_status,
+                    "llm_status": llm_status,
+                    "nli_status": nli_status,
+                    "final_status": final_status
+                }
+            )
 
         # --------------------------------------------------
         # 6. Calculate final claim support
@@ -200,19 +242,11 @@ class VerificationEngine:
         # --------------------------------------------------
 
         return {
-
             "claim_results": final_claim_results,
-
             "llm_results": llm_results,
-
             "evidence_similarity": evidence_similarity,
-
             "claim_support": claim_support,
-
             "average_claim_similarity": average_claim_similarity,
-
             "trust_score": trust_score,
-
             "status": overall_status
-
         }

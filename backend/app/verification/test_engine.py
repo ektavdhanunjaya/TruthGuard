@@ -61,7 +61,7 @@ def main():
         f"{result['status']}"
     )
 
-    print("\nSEMANTIC + LLM VERIFICATION")
+    print("\nSEMANTIC + NLI + LLM VERIFICATION")
     print("-" * 60)
 
     for i, claim in enumerate(
@@ -82,8 +82,8 @@ def main():
         )
 
         print(
-            f"Qwen Status: "
-            f"{claim['llm_status']}"
+            f"NLI Status: "
+            f"{claim['nli_status']}"
         )
 
         print(

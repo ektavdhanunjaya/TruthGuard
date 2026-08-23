@@ -9,6 +9,10 @@ class RAGPipeline:
 
         self.retriever = Retriever()
 
+        # Maximum Chroma distance considered relevant.
+        # Lower distance means higher similarity.
+        self.relevance_threshold = 1.20
+
     def index_document(
         self,
         document_path: str,
@@ -58,6 +62,10 @@ class RAGPipeline:
             metadatas,
             distances
         ):
+
+            # Ignore irrelevant retrieved chunks
+            if distance > self.relevance_threshold:
+                continue
 
             evidence.append(
                 {

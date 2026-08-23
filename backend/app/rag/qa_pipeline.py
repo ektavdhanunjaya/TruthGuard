@@ -31,7 +31,25 @@ class QAPipeline:
             top_k=top_k
         )
 
+        # --------------------------------------------------
+        # No relevant evidence
+        # --------------------------------------------------
+
+        if not evidence:
+
+            return {
+                "question": question,
+                "answer": (
+                    "I don't have enough information "
+                    "in the provided context."
+                ),
+                "evidence": []
+            }
+
+        # --------------------------------------------------
         # Build context
+        # --------------------------------------------------
+
         context_parts = []
 
         for i, item in enumerate(evidence):
@@ -48,7 +66,10 @@ Chunk: {item['chunk_index']}
 
         context = "\n".join(context_parts)
 
+        # --------------------------------------------------
         # Generate answer
+        # --------------------------------------------------
+
         answer = generate_answer(
             question=question,
             context=context
